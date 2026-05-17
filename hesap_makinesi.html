@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hesap Makinesi</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f2f5;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .calculator {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 24px;
+      width: 320px;
+    }
+
+    .display {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-align: right;
+      margin-bottom: 16px;
+      border: 1px solid #e9ecef;
+    }
+
+    .display-expr {
+      font-size: 13px;
+      color: #888;
+      min-height: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 6px;
+    }
+
+    .display-result {
+      font-size: 38px;
+      font-weight: 600;
+      color: #1a1a2e;
+      line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 18px 0;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.08s, background 0.1s;
+      outline: none;
+    }
+
+    button:active { transform: scale(0.94); }
+
+    .btn-num {
+      background: #f1f3f5;
+      color: #1a1a2e;
+    }
+    .btn-num:hover { background: #e2e6ea; }
+
+    .btn-op {
+      background: #e8f0fe;
+      color: #185FA5;
+    }
+    .btn-op:hover { background: #d0e1fd; }
+
+    .btn-clear {
+      background: #fdecea;
+      color: #A32D2D;
+    }
+    .btn-clear:hover { background: #fbd5d2; }
+
+    .btn-eq {
+      background: #185FA5;
+      color: #ffffff;
+    }
+    .btn-eq:hover { background: #0C447C; }
+
+    .btn-wide { grid-column: span 2; }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <div class="display">
+    <div class="display-expr" id="expr"></div>
+    <div class="display-result" id="result">0</div>
+  </div>
+
+  <div class="buttons">
+    <button class="btn-clear" onclick="temizle()">C</button>
+    <button class="btn-clear" onclick="sil()">⌫</button>
+    <button class="btn-op"    onclick="gir('%')">%</button>
+    <button class="btn-op"    onclick="gir('/')">÷</button>
+
+    <button class="btn-num" onclick="gir('7')">7</button>
+    <button class="btn-num" onclick="gir('8')">8</button>
+    <button class="btn-num" onclick="gir('9')">9</button>
+    <button class="btn-op"  onclick="gir('*')">×</button>
+
+    <button class="btn-num" onclick="gir('4')">4</button>
+    <button class="btn-num" onclick="gir('5')">5</button>
+    <button class="btn-num" onclick="gir('6')">6</button>
+    <button class="btn-op"  onclick="gir('-')">−</button>
+
+    <button class="btn-num" onclick="gir('1')">1</button>
+    <button class="btn-num" onclick="gir('2')">2</button>
+    <button class="btn-num" onclick="gir('3')">3</button>
+    <button class="btn-op"  onclick="gir('+')">+</button>
+
+    <button class="btn-num btn-wide" onclick="gir('0')">0</button>
+    <button class="btn-num" onclick="gir('.')">.</button>
+    <button class="btn-eq"  onclick="hesapla()">=</button>
+  </div>
+</div>
+
+<script>
+  let ifade = '';
+  const sonucEl = document.getElementById('result');
+  const ifadeEl = document.getElementById('expr');
+
+  function gir(deger) {
+    if (ifade === 'Hata') ifade = '';
+    const operatorler = ['+', '-', '*', '/', '%'];
+    const sonKarakter = ifade.slice(-1);
+    if (operatorler.includes(deger) && operatorler.includes(sonKarakter)) {
+      ifade = ifade.slice(0, -1);
+    }
+    ifade += deger;
+    sonucEl.textContent = formatGoster(ifade);
+  }
+
+  function temizle() {
+    ifade = '';
+    sonucEl.textContent = '0';
+    ifadeEl.textContent = '';
+  }
+
+  function sil() {
+    if (ifade === 'Hata') { ifade = ''; sonucEl.textContent = '0'; return; }
+    ifade = ifade.slice(0, -1);
+    sonucEl.textContent = formatGoster(ifade) || '0';
+  }
+
+  function hesapla() {
+    try {
+      ifadeEl.textContent = formatGoster(ifade) + ' =';
+      let hesap = ifade.replace(/÷/g, '/').replace(/×/g, '*');
+      hesap = hesap.replace(/(\d+\.?\d*)%/g, '($1/100)');
+      let sonuc = Function('"use strict"; return (' + hesap + ')')();
+      sonuc = parseFloat(sonuc.toFixed(10));
+      if (!isFinite(sonuc)) throw new Error();
+      sonucEl.textContent = sonuc.toLocaleString('tr-TR', { maximumFractionDigits: 10 });
+      ifade = String(sonuc);
+    } catch {
+      sonucEl.textContent = 'Hata';
+      ifade = 'Hata';
+      ifadeEl.textContent = '';
+    }
+  }
+
+  function formatGoster(str) {
+    return str.replace(/\*/g, '×').replace(/\//g, '÷');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key >= '0' && e.key <= '9') gir(e.key);
+    else if (e.key === '+') gir('+');
+    else if (e.key === '-') gir('-');
+    else if (e.key === '*') gir('*');
+    else if (e.key === '/') { e.preventDefault(); gir('/'); }
+    else if (e.key === '%') gir('%');
+    else if (e.key === '.') gir('.');
+    else if (e.key === 'Enter' || e.key === '=') hesapla();
+    else if (e.key === 'Backspace') sil();
+    else if (e.key === 'Escape') temizle();
+  });
+</script>
+
+</body>
+</html>
