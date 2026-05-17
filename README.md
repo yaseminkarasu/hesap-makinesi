@@ -13,5 +13,3 @@ HTML, CSS ve JavaScript kullanılarak geliştirilmiş basit bir hesap makinesidi
 - CSS3
 - JavaScript (Vanilla)
 
-## Canlı Demo
-[GitHub Pages linki buraya]
