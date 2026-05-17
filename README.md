@@ -13,3 +13,6 @@ HTML, CSS ve JavaScript kullanılarak geliştirilmiş basit bir hesap makinesidi
 - CSS3
 - JavaScript (Vanilla)
 
+## Canlı Demo
+[Hesap Makinesi](https://yaseminkarasu.github.io/hesap-makinesi/hesap-makinesi.html)
+
